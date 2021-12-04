@@ -1,0 +1,3 @@
+[submodule "hdl/rtl/nand_avalon"]
+	path = hdl/rtl/nand_avalon
+	url = https://github.com/nbstrong/nand_avalon.git
