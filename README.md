@@ -11,6 +11,9 @@ If the hdl/rtl/nand_avalon folder isn't showing as populated with files or they 
 2. Navigate to DE1_SoC_Computer/simulation/modelsim
 3. run `do tb.do`
 
+## To run hardware tests:
+Design requires Intel FPGA University Monitor. Project is located in DE1_SoC_Computer/sw
+
 ## Folder Structure
 Synthesis HDL
   * hdl/rtl/*
