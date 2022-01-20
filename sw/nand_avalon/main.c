@@ -2,7 +2,7 @@
 #include "address_map_arm.h"
 #include "nand.h"
 
-#define PRINT_PASSES 0 // Whether to print passing compare results
+#define PRINT_PASSES 1 // Whether to print passing compare results
 #define N 100          // How many addresses to test
 
 void compare(int a, int b);
@@ -75,11 +75,11 @@ void compare(int a, int b) {
     compares++;
     if(a == b) {
         if(PRINT_PASSES) {
-            printf("[PASS] : %x == %x", a, b);
+            printf("\n[PASS] : %x == %x", a, b);
         }
     }
     else {
-        printf("[FAIL] : %x != %x", a, b);
+        printf("\n[FAIL] : %x != %x", a, b);
         fails++;
     }
 }
