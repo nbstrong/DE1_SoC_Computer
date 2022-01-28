@@ -17,6 +17,22 @@ int init_nand() {
     return (_command_read(CTRL_GET_STATUS_CMD) & 1);
 }
 
+void set_address(int addr) {
+    _command_write(CTRL_RESET_INDEX_CMD);
+    for(int i = 0; i < 5;i++){
+        _command_write_data(CTRL_SET_CURRENT_ADDRESS_BYTE_CMD, ((addr >> (i*8)) & 0xFF));
+    }
+}
+
+int get_address() {
+    int addr = 0;
+    _command_write(CTRL_RESET_INDEX_CMD);
+    for(int i = 0; i < 5;i++){
+        addr |= _command_read(CTRL_GET_CURRENT_ADDRESS_BYTE_CMD) << (i*8);
+    }
+    return addr;
+}
+
 void _poll_busy(){
     int status = 0;
     status = _read_status_reg();

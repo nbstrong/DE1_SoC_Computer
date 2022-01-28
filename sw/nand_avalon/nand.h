@@ -33,6 +33,8 @@
 #define NAND_BYPASS_DATA_RD               23
 
 int init_nand();
+void set_address(int addr);
+int get_address();
 void _poll_busy();
 void _wait_nand_powerup();
 void _command_write(int cmd);
