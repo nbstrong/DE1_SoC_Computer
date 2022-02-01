@@ -1,7 +1,7 @@
 #include "nand.h"
 
 // Initializes NAND controller, reads status ID.
-// Reads parameter page.
+// Reads parameter page_buf.
 // Returns 1 if initialization was successful and
 // chip supports ONFI.
 // Returns 0 if chip doesn't support ONFI.
@@ -33,25 +33,25 @@ int get_address() {
     return addr;
 }
 
-void write_page(uint8_t *page) {
+void write_page(uint8_t *page_buf) {
     // Writes an entire page
 
     _command_write(CTRL_RESET_INDEX_CMD);
     for(uint16_t col_addr = 0; col_addr < PAGELEN; col_addr++) {
-        _command_write_data(CTRL_SET_DATA_PAGE_BYTE_CMD, *(page + col_addr));
+        _command_write_data(CTRL_SET_DATA_PAGE_BYTE_CMD, *(page_buf + col_addr));
     }
     _command_write(NAND_PAGE_PROGRAM_CMD);
 }
 
-uint8_t* read_page(uint8_t *page) {
+uint8_t* read_page(uint8_t *page_buf) {
     // Reads an entire page
 
     _command_write(NAND_READ_PAGE_CMD);
     _command_write(CTRL_RESET_INDEX_CMD);
     for(uint16_t col_addr = 0; col_addr < PAGELEN; col_addr++) {
-        *(page + col_addr) = _command_read(CTRL_GET_DATA_PAGE_BYTE_CMD);
+        *(page_buf + col_addr) = _command_read(CTRL_GET_DATA_PAGE_BYTE_CMD);
     }
-    return page;
+    return page_buf;
 }
 
 void _poll_busy(){
