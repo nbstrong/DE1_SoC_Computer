@@ -1,11 +1,17 @@
 #ifndef _NAND_H_
 #define _NAND_H_
 
+#include <stdint.h>
+
 // https://opencores.org/usercontent/doc/1466674234
 #define AVALON_NAND_BASE 0xFF200080
 #define NAND_DATA_32  ((volatile int*) AVALON_NAND_BASE+0)
 #define NAND_CMD_8    ((volatile int*) AVALON_NAND_BASE+1)
 #define NAND_STATUS_8 ((volatile int*) AVALON_NAND_BASE+2)
+
+#define PAGELEN 18592 // Number of bytes per page
+#define BLOCKLEN 1024 // Number of pages per block
+#define DEVLEN 2192   // Number of blocks per device
 
 #define INTERNAL_RESET_CMD                 0
 #define NAND_RESET_CMD                     1

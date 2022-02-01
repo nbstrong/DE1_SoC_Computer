@@ -33,6 +33,36 @@ int get_address() {
     return addr;
 }
 
+// void write_page(uint8_t page[]) {
+//     // Writes an entire page
+//     // Args: page - a PAGELEN length array of 1 byte elements
+//     // Returns: none
+//     // Will error if array is not [PAGELEN] length
+
+//     // Write controller pages with known sequence
+//     _command_write(CTRL_RESET_INDEX_CMD);
+//     for(uint16_t colAddr = 0; colAddr < PAGELEN; colAddr++) {
+//         _command_write_data(CTRL_SET_DATA_PAGE_BYTE_CMD, page[colAddr]);
+//     }
+//     // Write controller pages to NAND
+//     _command_write(NAND_PAGE_PROGRAM_CMD);
+// }
+
+// uintptr_t read_page() {
+//     // Reads an entire page
+//     // Args: none
+//     // Returns: a PAGELEN length array of 1 byte elements
+//     uint8_t *page
+
+//     // Read previously written page from NAND
+//     _command_write(NAND_READ_PAGE_CMD);
+//     _command_write(CTRL_RESET_INDEX_CMD);
+//     for(uint16_t colAddr = 0; colAddr < PAGELEN; colAddr++) {
+//         page[colAddr] = _command_read(CTRL_GET_DATA_PAGE_BYTE_CMD);
+//     }
+//     return page;
+// }
+
 void _poll_busy(){
     int status = 0;
     status = _read_status_reg();
