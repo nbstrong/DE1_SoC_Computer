@@ -41,6 +41,8 @@
 int init_nand();
 void set_address(int addr);
 int get_address();
+void write_page(uint8_t *page);
+uint8_t* read_page(uint8_t *page);
 void _poll_busy();
 void _wait_nand_powerup();
 void _command_write(int cmd);

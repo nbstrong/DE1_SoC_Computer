@@ -1,38 +1,30 @@
+#include <stdlib.h>
 #include <stdio.h>
 #include <stdint.h>
+#include <string.h>
 #include "address_map_arm.h"
 #include "nand.h"
 
 #define PRINT_PASSES 1 // Whether to print passing compare results
 #define N 10          // How many addresses to test
 
-void compare(__uint8_t a, __uint8_t b);
+void compare(uint8_t a, uint8_t b);
 void print_chip_id();
 void print_status();
-void simplePageTest();
+void simplePageTest(uint16_t num_pages);
 
-uint8_t page [PAGELEN];
-
-__uint16_t fails, compares = 0;
+uint16_t fails, compares = 0;
 
 int main(void) {
-
     init_nand();
 
     print_chip_id();
     print_status();
 
-    simplePageTest();
+    simplePageTest(3);
 
     // Erase chip
     _command_write(NAND_BLOCK_ERASE_CMD);
-    // Verify chip is erased
-    _command_write(NAND_READ_PAGE_CMD);
-    _command_write(CTRL_RESET_INDEX_CMD);
-    for(__uint16_t i = 0; i < N; i = i + 1) {
-        __uint8_t rdData = _command_read(CTRL_GET_DATA_PAGE_BYTE_CMD);
-        compare(rdData, 0xFF);
-    }
 
     printf("\n\n[Compares:Fails] %hi:%hi", compares, fails);
     printf("\nFin.");
@@ -40,7 +32,7 @@ int main(void) {
     return 0;
 }
 
-void compare(__uint8_t a, __uint8_t b) {
+void compare(uint8_t a, uint8_t b) {
     compares++;
     if(a == b) {
         if(PRINT_PASSES) {
@@ -55,15 +47,15 @@ void compare(__uint8_t a, __uint8_t b) {
 
 void print_chip_id() {
     _command_write(CTRL_RESET_INDEX_CMD);
-    for(__uint8_t i = 0; i < 5; i++) {
-        __uint8_t id = 0;
+    for(uint8_t i = 0; i < 5; i++) {
+        uint8_t id = 0;
         id = _command_read(CTRL_GET_ID_BYTE_CMD);
         printf("\nID Byte %hhi : %hhx", i, id);
     }
 }
 
 void print_status() {
-    __uint8_t status = 0;
+    uint8_t status = 0;
     status = _command_read(CTRL_GET_STATUS_CMD);
     printf("\n\n%hhx : is ONFI compliant          ", ((status >> 0) & 1));
     printf("\n%hhx : bus width (0 - x8 / 1 - x16) ", ((status >> 1) & 1));
@@ -72,39 +64,31 @@ void print_status() {
     printf("\n%hhx : array pointer out of bounds  ", ((status >> 4) & 1));
 }
 
-void simplePageTest() {
+void simplePageTest(uint16_t num_pages) {
     // Writes the first three pages with its page address + 1
-    __uint8_t rdData;
-    __uint64_t addr = 0;
 
-    __uint16_t num_pages = 3;
-    for(__uint16_t pgAddr = 0; pgAddr < num_pages; pgAddr++) {
-        addr = pgAddr << 16;
-        set_address(addr);
-        addr = get_address();
-        printf("\nAddr %llx", addr);
+    uint8_t* page = (uint8_t*)calloc(sizeof(uint8_t), PAGELEN);
+    // uint8_t rdData;
+    // uint64_t addr = 0;
 
-        // // Write controller pages with known sequence
-        // _command_write(CTRL_RESET_INDEX_CMD);
-        // for(__uint16_t colAddr = 0; colAddr < N; colAddr++) {
-        //     _command_write_data(CTRL_SET_DATA_PAGE_BYTE_CMD, pgAddr+1);
-        // }
-        // // Write controller pages to NAND
-        // _command_write(NAND_PAGE_PROGRAM_CMD);
+    for(uint16_t page_addr = 0; page_addr < num_pages; page_addr++) {
+        memset(page, (page_addr + 1), PAGELEN);
+        set_address(page_addr << 16);
+        printf("\nAddr %x", page_addr << 16);
+
+        write_page(page);
     }
 
-    for(__uint16_t pgAddr = 0; pgAddr < num_pages; pgAddr++) {
-        addr = pgAddr << 16;
-        set_address(addr);
-        addr = get_address();
-        printf("\nAddr %llx", addr);
+    for(uint16_t page_addr = 0; page_addr < num_pages; page_addr++) {
+        set_address(page_addr << 16);
+        printf("\nAddr %x", page_addr << 16);
 
-        // // Read previously written page from NAND
-        // _command_write(NAND_READ_PAGE_CMD);
-        // _command_write(CTRL_RESET_INDEX_CMD);
-        // for(__uint16_t colAddr = 0; colAddr < N; colAddr++) {
-        //     rdData = _command_read(CTRL_GET_DATA_PAGE_BYTE_CMD);
-        //     compare(rdData, pgAddr+1);
-        // }
+        page = read_page(page);
+
+        for(int col_addr = 0; col_addr < N; col_addr++) {
+            compare(page_addr + 1, *(page + page_addr));
+        }
     }
+
+    free(page);
 }
