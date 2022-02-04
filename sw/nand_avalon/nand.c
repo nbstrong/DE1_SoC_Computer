@@ -1,3 +1,4 @@
+#include <stdio.h>
 #include "nand.h"
 
 // Initializes NAND controller, reads status ID.
@@ -17,14 +18,14 @@ int init_nand() {
     return (_command_read(CTRL_GET_STATUS_CMD) & 1);
 }
 
-void set_address(int addr) {
+void _set_address(int addr) {
     _command_write(CTRL_RESET_INDEX_CMD);
     for(int i = 0; i < 5;i++){
         _command_write_data(CTRL_SET_CURRENT_ADDRESS_BYTE_CMD, ((addr >> (i*8)) & 0xFF));
     }
 }
 
-int get_address() {
+int _get_address() {
     int addr = 0;
     _command_write(CTRL_RESET_INDEX_CMD);
     for(int i = 0; i < 5;i++){
@@ -33,31 +34,79 @@ int get_address() {
     return addr;
 }
 
-void write_page(uint8_t *page_buf) {
+uint64_t gen_address(uint16_t block_idx, uint16_t page_idx, uint16_t col_idx) {
+    return block_idx << 24 | page_idx << 16 | col_idx;
+}
+
+void write_page(uint8_t *page_buf, uint64_t address) {
+    _set_address(address);
+    _write_page(page_buf);
+}
+
+void _write_page(uint8_t *page_buf) {
     // Writes an entire page
 
     _command_write(CTRL_RESET_INDEX_CMD);
     for(uint16_t col_addr = 0; col_addr < PAGELEN; col_addr++) {
-        _command_write_data(CTRL_SET_DATA_PAGE_BYTE_CMD, *(page_buf + col_addr));
+        _command_write_data(CTRL_SET_DATA_PAGE_BYTE_CMD, page_buf[col_addr]);
     }
     _command_write(NAND_PAGE_PROGRAM_CMD);
 }
 
-uint8_t* read_page(uint8_t *page_buf) {
+void read_page(uint8_t *page_buf, uint64_t address) {
+    _set_address(address);
+    _read_page(page_buf);
+}
+
+void _read_page(uint8_t *page_buf) {
     // Reads an entire page
 
     _command_write(NAND_READ_PAGE_CMD);
     _command_write(CTRL_RESET_INDEX_CMD);
     for(uint16_t col_addr = 0; col_addr < PAGELEN; col_addr++) {
-        *(page_buf + col_addr) = _command_read(CTRL_GET_DATA_PAGE_BYTE_CMD);
+        page_buf[col_addr] = _command_read(CTRL_GET_DATA_PAGE_BYTE_CMD);
     }
-    return page_buf;
+}
+
+void print_status() {
+    uint8_t status = 0;
+    status = _command_read(CTRL_GET_STATUS_CMD);
+    printf("\n\n%hhx : is ONFI compliant          ", ((status >> 0) & 1));
+    printf("\n%hhx : bus width (0 - x8 / 1 - x16) ", ((status >> 1) & 1));
+    printf("\n%hhx : is chip enabled              ", ((status >> 2) & 1));
+    printf("\n%hhx : is chip write protected      ", ((status >> 3) & 1));
+    printf("\n%hhx : array pointer out of bounds  ", ((status >> 4) & 1));
+}
+
+void print_page_buffer(uint8_t *page_buf, uint8_t num_cols) {
+    printf("\n");
+    for(uint8_t i = 0; i < num_cols; i++) {
+        if(i % 8 == 0){
+            printf("\n");
+        }
+        printf("%x ", page_buf[i]);
+    }
+    printf("\n");
 }
 
 void _poll_busy(){
     int status = 0;
-    status = _read_status_reg();
-    while(((status >> 0) & 1) == 1 || ((status >> 1) & 1) == 0) {status = _read_status_reg();}
+    int n_busy = 1;
+    int rnb = 0;
+    do {
+        status = _read_status_reg();
+        n_busy = (status >> 0) & 1;
+        rnb = (status >> 1) & 1;
+
+        if (DEBUG) {
+            if(n_busy == 1){
+                printf("\nController Busy");
+            }
+            if(rnb == 0) {
+                printf("\nNAND Busy");
+            }
+        }
+    } while(n_busy == 1 || rnb == 0);
 }
 
 // A timer would make this more accurate but

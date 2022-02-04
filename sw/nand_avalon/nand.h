@@ -3,6 +3,8 @@
 
 #include <stdint.h>
 
+#define DEBUG 0
+
 // https://opencores.org/usercontent/doc/1466674234
 #define AVALON_NAND_BASE 0xFF200080
 #define NAND_DATA_32  ((volatile int*) AVALON_NAND_BASE+0)
@@ -39,10 +41,15 @@
 #define NAND_BYPASS_DATA_RD               23
 
 int init_nand();
-void set_address(int addr);
-int get_address();
-void write_page(uint8_t *page_buf);
-uint8_t* read_page(uint8_t *page_buf);
+uint64_t gen_address(uint16_t block_idx, uint16_t page_idx, uint16_t col_idx);
+void _set_address(int addr);
+int _get_address();
+void write_page(uint8_t *page_buf, uint64_t address);
+void _write_page(uint8_t *page_buf);
+void read_page(uint8_t *page_buf, uint64_t address);
+void _read_page(uint8_t *page_buf);
+void print_status();
+void print_page_buffer(uint8_t *page_buf, uint8_t num_cols);
 void _poll_busy();
 void _wait_nand_powerup();
 void _command_write(int cmd);
