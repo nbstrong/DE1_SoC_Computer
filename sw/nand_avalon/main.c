@@ -27,20 +27,28 @@ int main(void) {
     print_chip_id();
     print_status();
 
-    memset(page, 1, PAGELEN);
-    simplePageTest(page, gen_address(0, 0, 0), NUM_COLS);
+    for(int j = 0;j < 10; j++) {
+      printf("\nj %i", j);
+      for(int i = 0; i < 10; i++) {
+        printf("\ni %i", i);
+        // read_page(page,  gen_address(j, i, 0));
+        write_page(page, gen_address(j,i,0));
+      }
+    }
+    // memset(page, 1, PAGELEN);
+    // simplePageTest(page, gen_address(0, 0, 0), NUM_COLS);
 
-    memset(page, 2, PAGELEN);
-    simplePageTest(page, gen_address(0, 1, 0), NUM_COLS);
+    // memset(page, 2, PAGELEN);
+    // simplePageTest(page, gen_address(0, 1, 0), NUM_COLS);
 
-    memset(page, 1, PAGELEN);
-    simplePageTest(page, gen_address(0, 0, 0), NUM_COLS);
+    // memset(page, 1, PAGELEN);
+    // simplePageTest(page, gen_address(0, 0, 0), NUM_COLS);
 
-    memset(page, 1, PAGELEN);
-    simplePageTest(page, gen_address(0, 0, 0), NUM_COLS);
+    // memset(page, 1, PAGELEN);
+    // simplePageTest(page, gen_address(0, 0, 0), NUM_COLS);
 
-    simpleBlockTest(page, 2, NUM_PAGES);
-    simpleBlockTest(page, 20, NUM_PAGES);
+    // simpleBlockTest(page, 2, NUM_PAGES);
+    // simpleBlockTest(page, 20, NUM_PAGES);
 
     // This fails because I am not handling 64 bit numbers correctly
     // on a 32 bit embedded system.

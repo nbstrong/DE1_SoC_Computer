@@ -12,6 +12,7 @@ int init_nand() {
     _wait_nand_powerup();
     _command_write(NAND_RESET_CMD);
     _command_write(NAND_READ_ID_CMD);
+    for (volatile int i = 0; i < 200;i++) {}; // 200 cycle delay to make up for hardware t_RHW violation
     _command_write(NAND_READ_PARAMETER_PAGE_CMD);
     _command_write(CTRL_RESET_INDEX_CMD);
     _command_write(CTRL_WRITE_ENABLE_CMD);
@@ -50,7 +51,9 @@ void _write_page(uint8_t *page_buf) {
     for(uint16_t col_addr = 0; col_addr < PAGELEN; col_addr++) {
         _command_write_data(CTRL_SET_DATA_PAGE_BYTE_CMD, page_buf[col_addr]);
     }
+    printf("\nX2");
     _command_write(NAND_PAGE_PROGRAM_CMD);
+    printf("\nX3");
 }
 
 void read_page(uint8_t *page_buf, uint64_t address) {
@@ -61,7 +64,9 @@ void read_page(uint8_t *page_buf, uint64_t address) {
 void _read_page(uint8_t *page_buf) {
     // Reads an entire page
 
+    printf("\nX2");
     _command_write(NAND_READ_PAGE_CMD);
+    printf("\nX3");
     _command_write(CTRL_RESET_INDEX_CMD);
     for(uint16_t col_addr = 0; col_addr < PAGELEN; col_addr++) {
         page_buf[col_addr] = _command_read(CTRL_GET_DATA_PAGE_BYTE_CMD);
@@ -90,7 +95,7 @@ void print_page_buffer(uint8_t *page_buf, uint8_t num_cols) {
 }
 
 void _poll_busy(){
-    int status = 0;
+    long int status = 0;
     int n_busy = 1;
     int rnb = 0;
     do {
@@ -100,10 +105,10 @@ void _poll_busy(){
 
         if (DEBUG) {
             if(n_busy == 1){
-                printf("\nController Busy");
+                printf("\n%lx Controller Busy", status);
             }
             if(rnb == 0) {
-                printf("\nNAND Busy");
+                printf("\n%lx NAND Busy", status);
             }
         }
     } while(n_busy == 1 || rnb == 0);
