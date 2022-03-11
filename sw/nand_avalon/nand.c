@@ -51,9 +51,7 @@ void _write_page(uint8_t *page_buf) {
     for(uint16_t col_addr = 0; col_addr < PAGELEN; col_addr++) {
         _command_write_data(CTRL_SET_DATA_PAGE_BYTE_CMD, page_buf[col_addr]);
     }
-    printf("\nX2");
     _command_write(NAND_PAGE_PROGRAM_CMD);
-    printf("\nX3");
 }
 
 void read_page(uint8_t *page_buf, uint64_t address) {
@@ -64,9 +62,7 @@ void read_page(uint8_t *page_buf, uint64_t address) {
 void _read_page(uint8_t *page_buf) {
     // Reads an entire page
 
-    printf("\nX2");
     _command_write(NAND_READ_PAGE_CMD);
-    printf("\nX3");
     _command_write(CTRL_RESET_INDEX_CMD);
     for(uint16_t col_addr = 0; col_addr < PAGELEN; col_addr++) {
         page_buf[col_addr] = _command_read(CTRL_GET_DATA_PAGE_BYTE_CMD);

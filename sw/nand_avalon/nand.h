@@ -3,7 +3,7 @@
 
 #include <stdint.h>
 
-#define DEBUG 1
+#define DEBUG 0
 
 // https://opencores.org/usercontent/doc/1466674234
 #define AVALON_NAND_BASE 0xFF200080
