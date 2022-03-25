@@ -10,6 +10,14 @@
 #define NUM_COLS 10          // How many addresses to test
 #define NUM_PAGES 3
 #define NUM_BLOCKS 3
+#define PRIV_TIMER_LOAD ((volatile int*) MPCORE_PRIV_TIMER+0)
+#define PRIV_TIMER_COUNTER ((volatile int*) MPCORE_PRIV_TIMER+1)
+#define PRIV_TIMER_CONTROL ((volatile int*) MPCORE_PRIV_TIMER+2)
+
+#define TIMERINIT         0xFFFFFFFF // Timer Decrements (cannot be changed)
+#define TIMERCLOCKSPERSEC 200000000  // ARM A9 MPCore Private Timer runs off 200 MHz
+#define TIMERSTART        0x1        // Enable
+#define TIMERSTOP         0x0        // Disable
 
 void compare(uint8_t a, uint8_t b);
 void print_chip_id();
@@ -21,20 +29,29 @@ uint16_t fails, compares = 0;
 
 int main(void) {
     uint8_t page[PAGELEN] = {0};
+    unsigned int sw_timer_start, sw_timer_end, sw_timer_total = 0;
+    *PRIV_TIMER_LOAD    = 0x0;
+    *PRIV_TIMER_CONTROL = 0x0;
 
     init_nand();
 
     print_chip_id();
     print_status();
 
-    for(int j = 0;j < 10; j++) {
-      printf("\nj %i", j);
-      for(int i = 0; i < 10; i++) {
-        printf("\ni %i", i);
-        // read_page(page,  gen_address(j, i, 0));
-        write_page(page, gen_address(j,i,0));
-      }
+
+    for(int i = 0;i < 10; i++) {
+      *PRIV_TIMER_LOAD = TIMERINIT;         // Initialize timer
+      *PRIV_TIMER_CONTROL = TIMERSTART;     // Start timer
+      sw_timer_start = *PRIV_TIMER_COUNTER; // Read current value
+
+      write_page(page, gen_address(0,i,0));
+
+      sw_timer_end = *PRIV_TIMER_COUNTER;   // Read current value
+      *PRIV_TIMER_CONTROL = TIMERSTOP;      // Stop timer
+      sw_timer_total = sw_timer_start - sw_timer_end;
+      printf("\nSW Cycles: %u SW Time: %E sec", sw_timer_total, ((float)sw_timer_total)/TIMERCLOCKSPERSEC);
     }
+
     // memset(page, 1, PAGELEN);
     // simplePageTest(page, gen_address(0, 0, 0), NUM_COLS);
 
