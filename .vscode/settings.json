@@ -1,5 +1,6 @@
 {
     "files.associations": {
-        "address_map_arm.h": "c"
+      "address_map_arm.h": "c",
+      "nand.h": "c"
     }
 }

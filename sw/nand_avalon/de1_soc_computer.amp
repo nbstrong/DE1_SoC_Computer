@@ -13,9 +13,9 @@
         <type>C Program</type>
         <source_files>
             <source_file filepath="true">main.c</source_file>
-            <source_file filepath="true">nand.c</source_file>
+            <source_file filepath="true">../../hdl/rtl/nand_avalon/sw/nand.c</source_file>
+            <header_file filepath="true">../../hdl/rtl/nand_avalon/sw/nand.h</header_file>
             <header_file filepath="true">address_map_arm.h</header_file>
-            <header_file filepath="true">nand.h</header_file>
         </source_files>
         <options>
             <compiler_flags>-g -O1 -std=c99</compiler_flags>

@@ -616,7 +616,7 @@ module Computer_System (
 	wire          mm_interconnect_0_jtag_uart_for_arm_1_avalon_jtag_slave_write;                         // mm_interconnect_0:JTAG_UART_for_ARM_1_avalon_jtag_slave_write -> JTAG_UART_for_ARM_1:av_write_n
 	wire   [31:0] mm_interconnect_0_jtag_uart_for_arm_1_avalon_jtag_slave_writedata;                     // mm_interconnect_0:JTAG_UART_for_ARM_1_avalon_jtag_slave_writedata -> JTAG_UART_for_ARM_1:av_writedata
 	wire   [31:0] mm_interconnect_0_nand_avalon_0_avalon_slave_0_readdata;                               // nand_avalon_0:readdata -> mm_interconnect_0:nand_avalon_0_avalon_slave_0_readdata
-	wire    [1:0] mm_interconnect_0_nand_avalon_0_avalon_slave_0_address;                                // mm_interconnect_0:nand_avalon_0_avalon_slave_0_address -> nand_avalon_0:address
+	wire    [2:0] mm_interconnect_0_nand_avalon_0_avalon_slave_0_address;                                // mm_interconnect_0:nand_avalon_0_avalon_slave_0_address -> nand_avalon_0:address
 	wire          mm_interconnect_0_nand_avalon_0_avalon_slave_0_read;                                   // mm_interconnect_0:nand_avalon_0_avalon_slave_0_read -> nand_avalon_0:pread
 	wire          mm_interconnect_0_nand_avalon_0_avalon_slave_0_write;                                  // mm_interconnect_0:nand_avalon_0_avalon_slave_0_write -> nand_avalon_0:pwrite
 	wire   [31:0] mm_interconnect_0_nand_avalon_0_avalon_slave_0_writedata;                              // mm_interconnect_0:nand_avalon_0_avalon_slave_0_writedata -> nand_avalon_0:writedata

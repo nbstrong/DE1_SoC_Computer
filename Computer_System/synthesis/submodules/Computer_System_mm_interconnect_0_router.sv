@@ -44,10 +44,10 @@
 
 module Computer_System_mm_interconnect_0_router_default_decode
   #(
-     parameter DEFAULT_CHANNEL = 15,
+     parameter DEFAULT_CHANNEL = 20,
                DEFAULT_WR_CHANNEL = -1,
                DEFAULT_RD_CHANNEL = -1,
-               DEFAULT_DESTID = 14 
+               DEFAULT_DESTID = 40 
    )
   (output [112 - 107 : 0] default_destination_id,
    output [41-1 : 0] default_wr_channel,
@@ -142,7 +142,7 @@ module Computer_System_mm_interconnect_0_router
     localparam PAD5 = log2ceil(64'h60 - 64'h50); 
     localparam PAD6 = log2ceil(64'h70 - 64'h60); 
     localparam PAD7 = log2ceil(64'h80 - 64'h70); 
-    localparam PAD8 = log2ceil(64'h90 - 64'h80); 
+    localparam PAD8 = log2ceil(64'ha0 - 64'h80); 
     localparam PAD9 = log2ceil(64'h108 - 64'h100); 
     localparam PAD10 = log2ceil(64'h110 - 64'h108); 
     localparam PAD11 = log2ceil(64'h1008 - 64'h1000); 
@@ -265,7 +265,7 @@ module Computer_System_mm_interconnect_0_router
             src_data[PKT_DEST_ID_H:PKT_DEST_ID_L] = 5;
     end
 
-    // ( 0x80 .. 0x90 )
+    // ( 0x80 .. 0xa0 )
     if ( {address[RG:PAD8],{PAD8{1'b0}}} == 15'h80   ) begin
             src_channel = 41'b0000100000000000000000000;
             src_data[PKT_DEST_ID_H:PKT_DEST_ID_L] = 40;
