@@ -11,21 +11,22 @@
 #define NUM_PAGES 3
 #define NUM_BLOCKS 3
 
-void compare(uint8_t a, uint8_t b);
+void compare(uint8_t a, uint8_t b, uint64_t addr);
 void print_chip_id();
 void simplePageTest(uint8_t *page_buf, uint64_t address, uint16_t num_cols);
 void patternPageTest(uint8_t *page_buf, uint16_t num_pages);
 void simpleBlockTest(uint8_t *page_buf, uint16_t block_addr, uint16_t num_pages);
-void check_page(uint8_t *exp_page_buf, uint64_t address, uint16_t num_cols);
+void compare_pages(uint8_t *page_buf, uint8_t *exp_page_buf, uint16_t num_bytes);
 void startupTest();
 
 
-uint16_t fails, compares = 0;
+uint32_t fails, compares = 0;
 
 int main(void) {
     uint8_t page[PAGELEN] = {0};
-    uint8_t exp_page[PAGELEN] = {0};
+    uint8_t exp_ones_page[PAGELEN] = {0};
     uint8_t exp_erased_page[PAGELEN] = {0};
+    uint8_t exp_zeros_page[PAGELEN] = {0};
     uint64_t address = 0;
 
     init_nand();
@@ -109,48 +110,100 @@ int main(void) {
     //   print_time(address);
     // }
 
+    // /**************************************************************************/
+    // printf("\nErasing a block, verifying, then writing ones to page 0 and interrupting. Then verifying");
+    // memset(exp_ones_page, 0x1, PAGELEN);
+    // memset(exp_erased_page, 0xFF, PAGELEN);
+    // memset(exp_zeros_page, 0x0, PAGELEN);
+    // // Set address for erase
+    // address = gen_address(0,0,0);
+    // _set_address(address);
+    // // Erase block
+    // _command_write(NAND_BLOCK_ERASE_CMD);
+    // print_time(address);
+    // // Verify page is erased
+    // read_page(page, address);
+    // printf("\nVerifying page is erased");
+    // compare_pages(page, exp_erased_page, PAGELEN);
+    // printf("\nDone verifying.");
+    // // Setup extension modules to interrupt
+    // _write_delay_reg(10000);
+    // _write_cntrl_reg(1);
+    // // Write exp_page to chip
+    // write_page(exp_ones_page, address);
+    // // Print how long the operation took
+    // print_time(address);
+    // // See what the difference between all exp_page and actual page is
+    // _write_controller_buffer(exp_zeros_page);
+    // _read_controller_buffer(page);
+    // printf("\nVerifying controller buffer is different");
+    // compare_pages(page, exp_zeros_page, PAGELEN);
+    // printf("\nDone verifying.");
+    // _command_write(NAND_READ_PARAMETER_PAGE_CMD); // Controller or nand chip requires this command to function correctly after interrupting
+    // read_page(page, address);
+    // printf("\nVerifying page is ones");
+    // compare_pages(page, exp_ones_page, PAGELEN);
+    // printf("\nDone verifying.");
+
     /**************************************************************************/
-    printf("\nErasing a block, verifying, then writing exp_page to page 0, interrupting after 20000 cycles. Then verifying");
-    memset(exp_page, 1, PAGELEN);
+    printf("\nWriting ones to a block, verifying, then interrupting an erase to a block, and printing out the block");
+    memset(exp_ones_page, 0x1, PAGELEN);
     memset(exp_erased_page, 0xFF, PAGELEN);
-    // Set address for erase
+    memset(exp_zeros_page, 0x0, PAGELEN);
+    // Set address
     address = gen_address(0,0,0);
     _set_address(address);
+    // Writes ones to page
+    write_page(exp_ones_page, address);
+    print_time(address);
+    read_page(page, address);
+    printf("\nVerifying page is ones");
+    compare_pages(page, exp_ones_page, PAGELEN);
+    printf("\nDone verifying.");
+    // Setup extension modules to interrupt
+    _write_delay_reg(100000);
+    _write_cntrl_reg(1);
     // Erase block
     _command_write(NAND_BLOCK_ERASE_CMD);
     print_time(address);
-    // Verify page is erased
-    read_page(page, address);
-    check_page(exp_erased_page, address, PAGELEN);
-    // Setup extension modules to interrupt
-    _write_delay_reg(20000);
-    _write_cntrl_reg(1);
-    // Write exp_page to chip
-    write_page(exp_page, address);
-    // Print how long the operation took
-    print_time(address);
+    // Verifying controller buffer is different
+    _write_controller_buffer(exp_zeros_page);
+    _read_controller_buffer(page);
+    printf("\nVerifying controller buffer is different");
+    compare_pages(page, exp_zeros_page, PAGELEN);
+    printf("\nDone verifying.");
     // See what the difference between all exp_page and actual page is
-    check_page(exp_page, address, PAGELEN);
-
+    // _command_write(NAND_READ_PARAMETER_PAGE_CMD); // Controller or nand chip requires this command to function correctly after interrupting
+    read_page(page, address);
+    print_page_buffer(page, 500, 1);
+    // compare_pages(page, exp_erased_page, 1000);
 
     // This fails because I am not handling 64 bit numbers correctly
     // on a 32 bit embedded system.
     // simpleBlockTest(page, 200, NUM_PAGES);
 
-    printf("\n\n[Compares:Fails] %hi:%hi", compares, fails);
+    printf("\n\n[Compares:Fails] %i:%i", compares, fails);
     printf("\nFin.");
     while(1) {}
     return 0;
 }
 
-void compare(uint8_t a, uint8_t b) {
+void compare(uint8_t a, uint8_t b, uint64_t addr) {
     compares++;
     if(a == b) {
-        if(VERBOSE) { printf("%hhx == %hhx : [PASS]", a, b); }
+        if(VERBOSE) { printf("\n %llx : [PASS] : %hhx == %hhx", addr, a, b); }
     }
     else {
-        printf("%hhx != %hhx : [FAIL]", a, b);
+        printf("\n %llx  : [FAIL] : %hhx != %hhx", addr, a, b);
         fails++;
+    }
+}
+
+void compare_pages(uint8_t *page_buf, uint8_t *exp_page_buf, uint16_t num_bytes) {
+    // Compare the expected vs actual
+    for(int byte_addr = 0; byte_addr < num_bytes; byte_addr++) {
+        if(VERBOSE) { printf("%x : ", byte_addr); }
+        compare(page_buf[byte_addr], exp_page_buf[byte_addr], byte_addr);
     }
 }
 
@@ -172,46 +225,39 @@ void simplePageTest(uint8_t *page_buf, uint64_t address, uint16_t num_cols) {
 
     // Copy the page to generate expected values
     uint8_t exp_page[PAGELEN] = {0};
+    uint8_t rd_page[PAGELEN] = {0};
     memcpy(exp_page, page_buf, PAGELEN);
+    memset(rd_page, 0x72, PAGELEN);
 
     // Write the page and then read the page from nand
-    write_page(page_buf, address);
-    check_page(exp_page, address, num_cols);
+    write_page(exp_page, address);
+    read_page(rd_page, address);
+    compare_pages(rd_page, exp_page, num_cols);
 }
 
-void check_page(uint8_t *exp_page_buf, uint64_t address, uint16_t num_cols) {
-    uint8_t page_buf[PAGELEN] = {0};
-    read_page(page_buf, address);
+// void simpleBlockTest(uint8_t *page_buf, uint16_t block_addr, uint16_t num_pages) {
+//     // Writes the first three pages with its page_buf address + 1
 
-    // Compare the expected vs actual
-    for(int col_addr = 0; col_addr < num_cols; col_addr++) {
-        if(VERBOSE) { printf("\n%x : ", col_addr); }
-        compare(exp_page_buf[col_addr], page_buf[col_addr]);
-    }
-}
+//     if(VERBOSE) { printf("\n\nExecuting Simple Block Test at Block %x", block_addr); }
 
-void simpleBlockTest(uint8_t *page_buf, uint16_t block_addr, uint16_t num_pages) {
-    // Writes the first three pages with its page_buf address + 1
+//     for(uint16_t page_addr = 0; page_addr < num_pages; page_addr++) {
+//         memset(page_buf, (page_addr + 1), PAGELEN);
+//         write_page(page_buf, gen_address(block_addr, page_addr, 0));
+//     }
 
-    if(VERBOSE) { printf("\n\nExecuting Simple Block Test at Block %x", block_addr); }
+//     for(uint16_t page_addr = 0; page_addr < num_pages; page_addr++) {
+//         read_page(page_buf, gen_address(block_addr, page_addr, 0));
 
-    for(uint16_t page_addr = 0; page_addr < num_pages; page_addr++) {
-        memset(page_buf, (page_addr + 1), PAGELEN);
-        write_page(page_buf, gen_address(block_addr, page_addr, 0));
-    }
-
-    for(uint16_t page_addr = 0; page_addr < num_pages; page_addr++) {
-        read_page(page_buf, gen_address(block_addr, page_addr, 0));
-
-        for(int col_addr = 0; col_addr < NUM_COLS; col_addr++) {
-            printf("\n%llx : ", gen_address(block_addr, page_addr, col_addr));
-            compare(page_addr + 1, page_buf[page_addr]);
-        }
-    }
-}
+//         for(int col_addr = 0; col_addr < NUM_COLS; col_addr++) {
+//             printf("\n%llx : ", gen_address(block_addr, page_addr, col_addr));
+//             compare(page_addr + 1, page_buf[page_addr]);
+//         }
+//     }
+// }
 
 void startupTest() {
   uint8_t page[PAGELEN] = {0};
+  uint8_t exp_page[PAGELEN] = {0};
 
   printf("\nBeginning Startup Test");
   _command_write(NAND_BLOCK_ERASE_CMD);
@@ -220,8 +266,8 @@ void startupTest() {
   for(int i = 0; i < 5;i++) {
     uint64_t address = gen_address(0, i, 0);
     if(VERBOSE) { printf("\nExecuting Page Write then Read at Address %llx", address); }
-    memset(page, i, PAGELEN);
-    simplePageTest(page, address, NUM_COLS);
+    memset(exp_page, i, PAGELEN);
+    simplePageTest(exp_page, address, PAGELEN);
   }
 
   // Erase the block
@@ -231,24 +277,26 @@ void startupTest() {
   for(int i = 0; i < 5;i++) {
     uint64_t address = gen_address(0, i, 0);
     if(VERBOSE) {  printf("\nExecuting Page Read at Address %llx", address); }
-    memset(page, 255, PAGELEN);
-    check_page(page, address, NUM_COLS);
+    memset(exp_page, 0xFF, PAGELEN);
+    read_page(page, address);
+    compare_pages(page, exp_page, PAGELEN);
   }
 
   // Writes the first 5 pages
   for(int i = 0; i < 5;i++) {
     uint64_t address = gen_address(0, i, 0);
     if(VERBOSE) {  printf("\nExecuting Page Write at Address %llx", address); }
-    memset(page, i, PAGELEN);
-    write_page(page, address);
+    memset(exp_page, i, PAGELEN);
+    write_page(exp_page, address);
   }
 
     // Reads the first 5 pages
   for(int i = 0; i < 5;i++) {
     uint64_t address = gen_address(0, i, 0);
     if(VERBOSE) {  printf("\nExecuting Page Read at Address %llx", address); }
-    memset(page, i, PAGELEN);
-    check_page(page, address, NUM_COLS);
+    memset(exp_page, i, PAGELEN);
+    read_page(page, address);
+    compare_pages(page, exp_page, PAGELEN);
   }
 
   _command_write(NAND_BLOCK_ERASE_CMD);
