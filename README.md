@@ -41,3 +41,6 @@ Software tests
 
 Nand drivers
   * hdl/rtl/nand_avalon/sw/*
+
+
+The nand_avalon wiki has miscellaneous useful data.
