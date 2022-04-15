@@ -14,16 +14,19 @@ If the hdl/rtl/nand_avalon folder isn't showing as populated with files or they 
 `git submodule sync && git submodule update`  
 
 ## To run simulations:
-1. Open Modelsim
+1. Open Modelsim and continue from TCL console
 2. Navigate to hdl/rtl/nand_avalon/sim/modelsim/
 3. run `do sim.do`
 
 ## To run hardware tests:
-Design requires Intel FPGA University Monitor. Project is located in DE1_SoC_Computer/sw
+1. Open Intel FPGA University Monitor
+2. Open project located in DE1_SoC_Computer/sw/nand_avalon/
+3. Download bitfile DE1_SoC_Computer_time_limited.sof to fpga
+4. Compile and load main.c
 
 ## Folder Structure
 Synthesis HDL
-  * hdl/rtl/*
+  * hdl/rtl/nand_avalon/hdl/*
   * DE1_SoC_Computer.v
 
 Constraints
@@ -37,7 +40,7 @@ Modelsim files
   * hdl/rtl/nand_avalon/sim/modelsim/*
 
 Software tests
-  * sw/*
+  * sw/nand_avalon/*
 
 Nand drivers
   * hdl/rtl/nand_avalon/sw/*
