@@ -34,6 +34,7 @@ int main(void) {
     print_chip_id();
     print_status();
 
+    // Early test to make sure nothing is broken
     startupTest();
 
     printf("\nFormat is Address : Cycles : Seconds");
@@ -110,73 +111,74 @@ int main(void) {
     //   print_time(address);
     // }
 
-    // /**************************************************************************/
-    // printf("\nErasing a block, verifying, then writing ones to page 0 and interrupting. Then verifying");
-    // memset(exp_ones_page, 0x1, PAGELEN);
-    // memset(exp_erased_page, 0xFF, PAGELEN);
-    // memset(exp_zeros_page, 0x0, PAGELEN);
-    // // Set address for erase
-    // address = gen_address(0,0,0);
-    // _set_address(address);
-    // // Erase block
-    // _command_write(NAND_BLOCK_ERASE_CMD);
-    // print_time(address);
-    // // Verify page is erased
-    // read_page(page, address);
-    // printf("\nVerifying page is erased");
-    // compare_pages(page, exp_erased_page, PAGELEN);
-    // printf("\nDone verifying.");
-    // // Setup extension modules to interrupt
-    // _write_delay_reg(10000);
-    // _write_cntrl_reg(1);
-    // // Write exp_page to chip
-    // write_page(exp_ones_page, address);
-    // // Print how long the operation took
-    // print_time(address);
-    // // See what the difference between all exp_page and actual page is
-    // _write_controller_buffer(exp_zeros_page);
-    // _read_controller_buffer(page);
-    // printf("\nVerifying controller buffer is different");
-    // compare_pages(page, exp_zeros_page, PAGELEN);
-    // printf("\nDone verifying.");
-    // _command_write(NAND_READ_PARAMETER_PAGE_CMD); // Controller or nand chip requires this command to function correctly after interrupting
-    // read_page(page, address);
-    // printf("\nVerifying page is ones");
-    // compare_pages(page, exp_ones_page, PAGELEN);
-    // printf("\nDone verifying.");
-
     /**************************************************************************/
-    printf("\nWriting ones to a block, verifying, then interrupting an erase to a block, and printing out the block");
+    printf("\nErasing a block, verifying, then writing ones to page 0 and interrupting. Then verifying");
     memset(exp_ones_page, 0x1, PAGELEN);
     memset(exp_erased_page, 0xFF, PAGELEN);
     memset(exp_zeros_page, 0x0, PAGELEN);
-    // Set address
+    // Set address for erase
     address = gen_address(0,0,0);
     _set_address(address);
-    // Writes ones to page
-    write_page(exp_ones_page, address);
-    print_time(address);
-    read_page(page, address);
-    printf("\nVerifying page is ones");
-    compare_pages(page, exp_ones_page, PAGELEN);
-    printf("\nDone verifying.");
-    // Setup extension modules to interrupt
-    _write_delay_reg(100000);
-    _write_cntrl_reg(1);
     // Erase block
     _command_write(NAND_BLOCK_ERASE_CMD);
     print_time(address);
-    // Verifying controller buffer is different
+    // Verify page is erased
+    read_page(page, address);
+    printf("\nVerifying page is erased");
+    compare_pages(page, exp_erased_page, PAGELEN);
+    printf("\nDone verifying.");
+    // Setup extension modules to interrupt
+    _write_delay_reg(80000);
+    _write_cntrl_reg(1);
+    // Write exp_page to chip
+    write_page(exp_ones_page, address);
+    // Print how long the operation took
+    print_time(address);
+    // See what the difference between all exp_page and actual page is
     _write_controller_buffer(exp_zeros_page);
     _read_controller_buffer(page);
     printf("\nVerifying controller buffer is different");
     compare_pages(page, exp_zeros_page, PAGELEN);
     printf("\nDone verifying.");
-    // See what the difference between all exp_page and actual page is
-    // _command_write(NAND_READ_PARAMETER_PAGE_CMD); // Controller or nand chip requires this command to function correctly after interrupting
+    _command_write(NAND_READ_PARAMETER_PAGE_CMD); // Controller or nand chip requires this command to function correctly after interrupting
     read_page(page, address);
     print_page_buffer(page, 500, 1);
-    // compare_pages(page, exp_erased_page, 1000);
+    // printf("\nVerifying page is ones");
+    // compare_pages(page, exp_ones_page, PAGELEN);
+    // printf("\nDone verifying.");
+
+    /**************************************************************************/
+    // printf("\nWriting ones to a block, verifying, then interrupting an erase to a block, and printing out the block");
+    // memset(exp_ones_page, 0x1, PAGELEN);
+    // memset(exp_erased_page, 0xFF, PAGELEN);
+    // memset(exp_zeros_page, 0x0, PAGELEN);
+    // // Set address
+    // address = gen_address(0,0,0);
+    // _set_address(address);
+    // // Writes ones to page
+    // write_page(exp_ones_page, address);
+    // print_time(address);
+    // read_page(page, address);
+    // printf("\nVerifying page is ones");
+    // compare_pages(page, exp_ones_page, PAGELEN);
+    // printf("\nDone verifying.");
+    // // Setup extension modules to interrupt
+    // _write_delay_reg(100000);
+    // _write_cntrl_reg(1);
+    // // Erase block
+    // _command_write(NAND_BLOCK_ERASE_CMD);
+    // print_time(address);
+    // // Verifying controller buffer is different
+    // _write_controller_buffer(exp_zeros_page);
+    // _read_controller_buffer(page);
+    // printf("\nVerifying controller buffer is different");
+    // compare_pages(page, exp_zeros_page, PAGELEN);
+    // printf("\nDone verifying.");
+    // // See what the difference between all exp_page and actual page is
+    // // _command_write(NAND_READ_PARAMETER_PAGE_CMD); // Controller or nand chip requires this command to function correctly after interrupting
+    // read_page(page, address);
+    // print_page_buffer(page, 500, 1);
+    // // compare_pages(page, exp_erased_page, 1000);
 
     // This fails because I am not handling 64 bit numbers correctly
     // on a 32 bit embedded system.
