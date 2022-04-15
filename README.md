@@ -15,7 +15,7 @@ If the hdl/rtl/nand_avalon folder isn't showing as populated with files or they 
 
 ## To run simulations:
 1. Open Modelsim
-2. Navigate to DE1_SoC_Computer/simulation/modelsim
+2. Navigate to hdl/rtl/nand_avalon/sim/modelsim/
 3. run `do sim.do`
 
 ## To run hardware tests:
@@ -31,10 +31,13 @@ Constraints
   * DE1_SoC_Computer.sdc
 
 Testbench HDL
-  * hdl/behav/*
+  * hdl/rtl/nand_avalon/sim/behav/*
 
 Modelsim files
-  * simulation/modelsim/*
+  * hdl/rtl/nand_avalon/sim/modelsim/*
 
-Software drivers and tests
+Software tests
   * sw/*
+
+Nand drivers
+  * hdl/rtl/nand_avalon/sw/*
