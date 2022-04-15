@@ -2,7 +2,9 @@
 
 ## Software Required:
 Quartus Prime Version 18.1.0 Build 625 09/12/2018 SJ Lite Edition
+
 ModelSim - INTEL FPGA STARTER EDITION 10.5b
+
 Intel FPGA Monitor Program 18.1 (Dec 5, 2018)
 
 ## To clone:  
