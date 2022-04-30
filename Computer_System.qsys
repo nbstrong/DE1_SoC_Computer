@@ -169,6 +169,14 @@
          type = "String";
       }
    }
+   element Computer_System
+   {
+      datum _originalDeviceFamily
+      {
+         value = "Cyclone V";
+         type = "String";
+      }
+   }
    element Expansion_JP1
    {
       datum _sortIndex
@@ -2364,7 +2372,7 @@
   <parameter name="video_in_clk_en" value="false" />
  </module>
  <module name="gcd_avalon_0" kind="gcd_avalon" version="1.2" enabled="1" />
- <module name="nand_avalon_0" kind="nand_avalon" version="2.4" enabled="1" />
+ <module name="nand_avalon_0" kind="nand_avalon" version="2.5" enabled="1" />
  <connection
    kind="avalon"
    version="18.1"

@@ -112,28 +112,35 @@ int main(void) {
     // }
 
     /**************************************************************************/
-    printf("\nErasing a block, verifying, then writing ones to page 0 and interrupting. Then verifying");
+    printf("\nTest Description: Erasing a block, verifying, then writing ones to page 0 and interrupting. Then verifying");
     memset(exp_ones_page, 0x1, PAGELEN);
     memset(exp_erased_page, 0xFF, PAGELEN);
     memset(exp_zeros_page, 0x0, PAGELEN);
     // Set address for erase
     address = gen_address(0,0,0);
     _set_address(address);
-    // Erase block
-    _command_write(NAND_BLOCK_ERASE_CMD);
+    // Writing page to demonstrate normal write cycle count
+    printf("\nWriting page to demonstrate normal write cycle count");
+    write_page(exp_ones_page, address);
     print_time(address);
+    // Erase block
+    printf("\nErasing block to 0xFF.");
+    _command_write(NAND_BLOCK_ERASE_CMD);
     // Verify page is erased
+    printf("\nReading page to verify erasure");
     read_page(page, address);
-    printf("\nVerifying page is erased");
     compare_pages(page, exp_erased_page, PAGELEN);
     printf("\nDone verifying.");
     // Setup extension modules to interrupt
+    printf("\nSetting up extension modules to interrupt.");
     _write_delay_reg(80000);
     _write_cntrl_reg(1);
     // Write exp_page to chip
+    printf("\nInterrupting write of 0x01 to each address of page0 after 80000 cycles.");
     write_page(exp_ones_page, address);
     // Print how long the operation took
     print_time(address);
+    _write_cntrl_reg(0);
     // See what the difference between all exp_page and actual page is
     _write_controller_buffer(exp_zeros_page);
     _read_controller_buffer(page);
@@ -142,7 +149,8 @@ int main(void) {
     printf("\nDone verifying.");
     _command_write(NAND_READ_PARAMETER_PAGE_CMD); // Controller or nand chip requires this command to function correctly after interrupting
     read_page(page, address);
-    print_page_buffer(page, 500, 1);
+    printf("\nPrinting the first 20 addresses of the page buffer.");
+    print_page_buffer(page, 20, 1);
     // printf("\nVerifying page is ones");
     // compare_pages(page, exp_ones_page, PAGELEN);
     // printf("\nDone verifying.");
